@@ -22,6 +22,7 @@ const getUserProfile = async (req, res) => {
       verified: foundUser.verified
     });
   } catch (error) {
+    console.error("getUserProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -44,6 +45,7 @@ const updateNameProfile = async (req, res) => {
 
     return res.status(200).json({ message: "Name updated" });
   } catch (error) {
+    console.error("updateNameProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -97,12 +99,17 @@ const requestEmailChange = async (req, res) => {
       <p>This link expires in 1 hour.</p>
     `;
 
-    await sendVerificationEmail(newEmail, html, "Verify your new email");
+    sendVerificationEmail(newEmail, html, "Verify your new email").catch(
+      (error) => {
+        console.error("requestEmailChange email error:", error);
+      }
+    );
 
     return res.status(200).json({
       message: "Verification link sent to new email"
     });
   } catch (error) {
+    console.error("requestEmailChange controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -148,6 +155,7 @@ const confirmEmailChange = async (req, res) => {
 
     return res.status(200).json({ message: "Email updated successfully" });
   } catch (error) {
+    console.error("confirmEmailChange controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -176,6 +184,7 @@ const deleteOneProfile = async (req, res) => {
 
     return res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
+    console.error("deleteOneProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -214,12 +223,17 @@ const resetPasswordRequest = async (req, res) => {
     const resetLink = `${process.env.WEB_URL}/api/v1/auth/change-password?token=${token}`;
     const html = `<p>Click <a href="${resetLink}">here</a> to reset your password</p>`;
 
-    await sendVerificationEmail(user.email, html, "Reset Your Password");
+    sendVerificationEmail(user.email, html, "Reset Your Password").catch(
+      (error) => {
+        console.error("resetPasswordRequest email error:", error);
+      }
+    );
 
     return res.status(200).json({
       message: "Password reset link sent to email"
     });
   } catch (error) {
+    console.error("resetPasswordRequest controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -252,6 +266,7 @@ const resetPasswordConfirm = async (req, res) => {
       message: "Password changed successfully"
     });
   } catch (error) {
+    console.error("resetPasswordConfirm controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -294,6 +309,7 @@ const changePasswordInside = async (req, res) => {
       message: "Password changed successfully"
     });
   } catch (error) {
+    console.error("changePasswordInside controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message

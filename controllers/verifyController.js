@@ -17,7 +17,7 @@ const sendVerification = async (user) => {
   const link = `${process.env.WEB_URL}/api/v1/auth/verify-account?code=${code}`;
   const html = `<p>Click <a href="${link}">here</a> to verify your account</p>`;
 
-  await sendVerificationEmail(user.email, html, "Verify Your Account");
+  return sendVerificationEmail(user.email, html, "Verify Your Account");
 };
 
 const resendVerification = async (req, res) => {
@@ -38,12 +38,15 @@ const resendVerification = async (req, res) => {
       return res.status(400).json({ message: "Account already verified" });
     }
 
-    await sendVerification(user);
+    sendVerification(user).catch((error) => {
+      console.error("resendVerification email error:", error);
+    });
 
     return res.status(200).json({
       message: "Verification code sent successfully"
     });
   } catch (error) {
+    console.error("resendVerification controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -72,6 +75,7 @@ const verifyAccount = async (req, res) => {
       message: "Account verified successfully"
     });
   } catch (error) {
+    console.error("verifyAccount controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message

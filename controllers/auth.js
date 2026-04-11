@@ -30,7 +30,9 @@ const register = async (req, res) => {
   }
 
   if (password.length < 6) {
-    return res.status(400).json({ message: "Password must be at least 6 characters" });
+    return res
+      .status(400)
+      .json({ message: "Password must be at least 6 characters" });
   }
 
   try {
@@ -50,19 +52,22 @@ const register = async (req, res) => {
 
     const user = await userRepository.createUser(newUser);
 
-    await sendVerification(user);
+    sendVerification(user).catch((error) => {
+      console.error("register verification email error:", error);
+    });
 
     return res.status(201).json({
       message: "User registered successfully. Please verify your account."
     });
-
   } catch (error) {
+    console.error("register controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
     });
   }
 };
+
 // POST /login
 const login = async (req, res) => {
   const { email, password } = req.body || {};
@@ -113,6 +118,7 @@ const login = async (req, res) => {
       access_token: accessToken
     });
   } catch (error) {
+    console.error("login controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -129,7 +135,11 @@ const logout = async (req, res) => {
   }
 
   try {
-    const tokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
     await refreshRepository.deleteRefreshToken(tokenHash);
 
     res.clearCookie("refresh_token", {
@@ -140,6 +150,7 @@ const logout = async (req, res) => {
 
     return res.status(200).json({ message: "User logged out successfully" });
   } catch (error) {
+    console.error("logout controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -156,7 +167,11 @@ const refreshAccessToken = async (req, res) => {
   }
 
   try {
-    const tokenHash = crypto.createHash("sha256").update(refreshToken).digest("hex");
+    const tokenHash = crypto
+      .createHash("sha256")
+      .update(refreshToken)
+      .digest("hex");
+
     const storedToken = await refreshRepository.findByTokenHash(tokenHash);
 
     if (!storedToken) {
@@ -168,7 +183,10 @@ const refreshAccessToken = async (req, res) => {
       return res.status(400).json({ message: "Refresh token expired" });
     }
 
-    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
 
     const accessToken = jwt.sign(
       { user_id: decoded.user_id, email: decoded.email },
@@ -181,6 +199,7 @@ const refreshAccessToken = async (req, res) => {
       access_token: accessToken
     });
   } catch (error) {
+    console.error("refreshAccessToken controller error:", error);
     return res.status(500).json({
       message: "Server error",
       error: error.message

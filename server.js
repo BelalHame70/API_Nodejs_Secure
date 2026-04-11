@@ -8,10 +8,10 @@ const connectDB = require("./config/db");
 const corsOptions = require("./config/cors");
 
 const authRouter = require("./routes/auth");
-// const agentRouter = require("./routes/agent");
+ const agentRouter = require("./routes/agent");
 // const widgetRouter = require("./routes/widget");
 // const trainRouter = require("./routes/train");
-// const uploadRouter = require("./routes/upload");
+ const uploadRouter = require("./routes/upload");
 
 const app = express();
 const PORT = process.env.PORT || 9000;
@@ -27,10 +27,10 @@ app.get("/health", (req, res) => res.json({ ok: true }));
 // routes
 app.use("/api/v1/auth", authRouter);
 
-// app.use("/api/v1/agents", agentRouter);
+ app.use("/api/v1/agents", agentRouter);
 // app.use("/api/v1", widgetRouter);
 // app.use("/api/v1/train", trainRouter);
-// app.use("/api/v1/upload", uploadRouter);
+ app.use("/api/v1/upload", uploadRouter);
 
 // 404
 app.use((req, res) => {

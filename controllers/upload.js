@@ -4,57 +4,104 @@ const { v4: uuid } = require("uuid");
 
 const uploadFile = async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: "File required" });
+    if (!req.file) {
+      return res.status(400).json({ message: "File required" });
+    }
 
     const agent = await agentRepo.findById(req.params.id);
+
     if (!agent || agent.user_id !== req.user.user_id) {
       return res.status(404).json({ message: "Agent not found" });
     }
 
-    const fileExtension = req.file.originalname.split(".").pop().toLowerCase();
-    const fileName = `${uuid()}_${req.file.originalname}`;
+    //  delete old file if exists
+    if (agent.file_path) {
+      const oldKey = agent.file_path.split("/").pop();
+
+      await s3.deleteObject({
+        Bucket: process.env.AWS_S3_BUCKET_NAME,
+        Key: oldKey
+      }).promise();
+    }
+
+    //  sanitize file name
+    const safeName = req.file.originalname.replace(/\s+/g, "_");
+    const fileExtension = safeName.split(".").pop().toLowerCase();
+    const fileName = `${uuid()}_${safeName}`;
 
     const params = {
       Bucket: process.env.AWS_S3_BUCKET_NAME,
       Key: fileName,
       Body: req.file.buffer,
       ContentType: req.file.mimetype,
-      ACL: "public-read"
+      //  ACL: "public-read"
     };
 
     const data = await s3.upload(params).promise();
 
-    // ✅ يحدّث file_path + status trained
+    //  update DB
     await agentRepo.updateAgentFile(req.params.id, data.Location);
 
     return res.json({
+      success: true,
       message: `${fileExtension.toUpperCase()} uploaded successfully`,
       file_path: data.Location
     });
+
   } catch (err) {
-    console.error(err);
+    console.error("uploadFile error:", err);
+
     if (err.message && err.message.includes("Invalid file type")) {
       return res.status(400).json({ message: err.message });
     }
-    return res.status(500).json({ message: "Server error", error: err.message });
+
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
   }
 };
 
 const deleteFile = async (req, res) => {
   try {
     const agent = await agentRepo.findById(req.params.id);
+
     if (!agent || agent.user_id !== req.user.user_id) {
       return res.status(404).json({ message: "Agent not found" });
     }
 
-    // ملاحظة: انت عامل deleteFile في repo؟ لو مش موجود، لازم تعملها.
+    // check if file exists
+    if (!agent.file_path) {
+      return res.status(400).json({ message: "No file to delete" });
+    }
+
+    //  delete from S3
+    const fileKey = agent.file_path.split("/").pop();
+
+    await s3.deleteObject({
+      Bucket: process.env.AWS_S3_BUCKET_NAME,
+      Key: fileKey
+    }).promise();
+
+    //  update DB
     await agentRepo.deleteFile(req.params.id);
 
-    return res.json({ message: "File deleted successfully" });
+    return res.json({
+      success: true,
+      message: "File deleted successfully"
+    });
+
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ message: "Server error", error: err.message });
+    console.error("deleteFile error:", err);
+
+    return res.status(500).json({
+      message: "Server error",
+      error: err.message
+    });
   }
 };
 
-module.exports = { uploadFile, deleteFile };
+module.exports = {
+  uploadFile,
+  deleteFile
+};

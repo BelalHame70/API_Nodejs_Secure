@@ -14,7 +14,7 @@ const sendVerification = async (user) => {
     used: false
   });
 
-  const link = `http://localhost:9000/api/v1/auth/verify-account?code=${code}`;
+  const link = `${process.env.WEB_URL}/api/v1/auth/verify-account?code=${code}`;
   const html = `<p>Click <a href="${link}">here</a> to verify your account</p>`;
 
   await sendVerificationEmail(user.email, html, "Verify Your Account");

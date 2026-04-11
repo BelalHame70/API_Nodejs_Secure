@@ -90,7 +90,7 @@ const requestEmailChange = async (req, res) => {
       used: false
     });
 
-    const verifyLink = `http://localhost:9000/api/v1/auth/profile-email-confirm?token=${token}`;
+    const verifyLink = `${process.env.WEB_URL}/api/v1/auth/profile-email-confirm?token=${token}`;
     const html = `
       <p>Confirm your new email by clicking:</p>
       <p><a href="${verifyLink}">Verify new email</a></p>
@@ -211,7 +211,7 @@ const resetPasswordRequest = async (req, res) => {
       used: false
     });
 
-    const resetLink = `http://localhost:9000/api/v1/auth/change-password?token=${token}`;
+    const resetLink = `${process.env.WEB_URL}/api/v1/auth/change-password?token=${token}`;
     const html = `<p>Click <a href="${resetLink}">here</a> to reset your password</p>`;
 
     await sendVerificationEmail(user.email, html, "Reset Your Password");

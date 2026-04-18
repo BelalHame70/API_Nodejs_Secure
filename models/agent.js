@@ -3,13 +3,35 @@ const mongoose = require("mongoose");
 const agentSchema = new mongoose.Schema(
   {
     agent_id: { type: String, required: true, unique: true },
-    user_id: { type: String, ref: "User", required: true }, // UUID user_id
+    user_id: { type: String, ref: "User", required: true },
     name: { type: String, required: true },
-    type: { type: String, default: "pdf-agent" },
-    file_path: { type: String, default: null },
-    status: { type: String, enum: ["draft", "trained", "active"], default: "draft" },
 
-    ai_status: { type: String, enum: ["idle", "processing", "ready"], default: "idle" }
+    agent_type: {
+      type: String,
+      enum: ["knowledge_base", "analysis", "customer_support"],
+      required: true
+    },
+
+    file_path: { type: String, default: null },
+    file_key: { type: String, default: null },
+    file_name: { type: String, default: null },
+    file_type: {
+      type: String,
+      enum: ["pdf", "csv", "txt", "doc"],
+      default: null
+    },
+
+    status: {
+      type: String,
+      enum: ["draft", "trained", "active"],
+      default: "draft"
+    },
+
+    ai_status: {
+      type: String,
+      enum: ["idle", "processing", "ready", "failed"],
+      default: "idle"
+    }
   },
   { timestamps: true }
 );

@@ -1,19 +1,17 @@
 const { v4: uuid } = require("uuid");
 const agentRepo = require("../repositories/agent");
 
-const Agents_types = ["knowledgeBase", "customerSupport", "analytics"];
+const AGENT_TYPES = ["knowledge_base", "analysis", "customer_support"];
 
 const createAgent = async (req, res) => {
   try {
-    const { name, type } = req.body;
+    const { name, agent_type } = req.body;
 
-    // validate name
     if (!name || !name.trim()) {
       return res.status(400).json({ message: "Agent name required" });
     }
 
-    // validate type
-    if (!type || !Agents_types.includes(type)) {
+    if (!agent_type || !AGENT_TYPES.includes(agent_type)) {
       return res.status(400).json({ message: "Invalid agent type" });
     }
 
@@ -21,8 +19,13 @@ const createAgent = async (req, res) => {
       agent_id: uuid(),
       user_id: req.user.user_id,
       name: name.trim(),
-      type,
-      status: "draft"
+      agent_type,
+      status: "draft",
+      ai_status: "idle",
+      file_path: null,
+      file_key: null,
+      file_name: null,
+      file_type: null
     });
 
     return res.status(201).json(agent);
@@ -56,8 +59,6 @@ const getAgent = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 const deleteAgent = async (req, res) => {
   try {

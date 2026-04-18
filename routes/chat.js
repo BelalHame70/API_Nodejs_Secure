@@ -1,7 +1,7 @@
 // routes/agentTest.js
 const express = require("express");
 const authenticateToken = require("../middlewares/authenticateToken");
-const { testAgent } = require("../controllers/testAgent");
+const { testAgent } = require("../controllers/chat");
 
 const router = express.Router();
 

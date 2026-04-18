@@ -17,17 +17,17 @@ const testAgent = async (req, res) => {
 
     const agent = await agentRepo.findById(req.params.id);
 
-    // ownership check
+    
     if (!agent || agent.user_id !== req.user.user_id) {
       return res.status(404).json({ message: "Agent not found" });
     }
 
-    // prevent test before training
+    
     if (agent.ai_status !== "ready") {
       return res.status(400).json({ message: "Agent is not trained yet" });
     }
 
-    // call AI service (same idea as widget ask)
+    
     const { data } = await axios.post(
       `${AI_BASE}/ask`,
       { agent_id: agent.agent_id, message: message.trim() },

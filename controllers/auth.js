@@ -10,9 +10,9 @@ const refreshRepository = require("../repositories/refresh");
 const isProd = process.env.NODE_ENV === "production";
 
 const getCookieOptions = () => ({
-  httpOnly: true,
-  secure: isProd,
-  sameSite: isProd ? "none" : "lax",
+  httpOnly: true,// xss protection
+  secure: isProd, // https only in production
+  sameSite: isProd ? "none" : "lax", //csrf
   maxAge: 7 * 24 * 60 * 60 * 1000
 });
 

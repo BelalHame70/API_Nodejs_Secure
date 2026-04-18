@@ -8,12 +8,31 @@ const updateAgent = (agent_id, data) => Agent.updateOne({ agent_id }, data);
 const deleteAgent = (agent_id) => Agent.deleteOne({ agent_id });
 
 // upload updates
-const updateAgentFile = (agent_id, file_path) =>
-  Agent.updateOne({ agent_id }, { file_path, status: "trained" });
+const updateAgentFile = (agent_id, fileData) =>
+  Agent.updateOne(
+    { agent_id },
+    {
+      file_path: fileData.file_path,
+      file_key: fileData.file_key,
+      file_name: fileData.file_name,
+      file_type: fileData.file_type,
+      status: "draft",
+      ai_status: "idle"
+    }
+  );
 
-// ✅ delete file (لو هتستخدم /upload/:id/delete)
 const deleteFile = (agent_id) =>
-  Agent.updateOne({ agent_id }, { file_path: null, status: "draft" });
+  Agent.updateOne(
+    { agent_id },
+    {
+      file_path: null,
+      file_key: null,
+      file_name: null,
+      file_type: null,
+      status: "draft",
+      ai_status: "idle"
+    }
+  );
 
 module.exports = {
   createAgent,

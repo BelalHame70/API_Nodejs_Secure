@@ -1,7 +1,34 @@
-const Widget = require('../models/widget'); // عدّل حسب مكان الموديل
+const Widget = require("../models/Widget");
 
-const createWidget = (data) => Widget.create(data);
-const getWidgetByAgentId = (agent_id) => Widget.findOne({ agent_id });
-const getWidgetByKeyHash = (api_key_hash) => Widget.findOne({ api_key_hash });
+const createWidget = async (data) => {
+  return Widget.create(data);
+};
 
-module.exports = { createWidget, getWidgetByAgentId, getWidgetByKeyHash };
+const getWidgetByAgentId = async (agent_id) => {
+  return Widget.findOne({ agent_id });
+};
+
+const getWidgetByKeyHash = async (api_key_hash) => {
+  return Widget.findOne({ api_key_hash });
+};
+
+const getWidgetByWidgetId = async (widget_id) => {
+  return Widget.findOne({ widget_id });
+};
+
+const updateWidgetByAgentId = async (agent_id, updateData) => {
+  return Widget.findOneAndUpdate({ agent_id }, updateData, { new: true });
+};
+
+const deleteWidgetByAgentId = async (agent_id) => {
+  return Widget.findOneAndDelete({ agent_id });
+};
+
+module.exports = {
+  createWidget,
+  getWidgetByAgentId,
+  getWidgetByKeyHash,
+  getWidgetByWidgetId,
+  updateWidgetByAgentId,
+  deleteWidgetByAgentId
+};

@@ -8,7 +8,7 @@ const agentSchema = new mongoose.Schema(
 
     agent_type: {
       type: String,
-      enum: ["knowledge_base", "analysis", "customer_support"],
+      enum: ["knowledge Base", "analysis", "customer support"],
       required: true
     },
 

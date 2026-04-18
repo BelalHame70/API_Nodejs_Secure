@@ -1,7 +1,7 @@
 const { v4: uuid } = require("uuid");
 const agentRepo = require("../repositories/agent");
 
-const AGENT_TYPES = ["knowledge_base", "analysis", "customer_support"];
+const AGENT_TYPES =  ["knowledge Base", "analysis", "customer support"];
 
 const createAgent = async (req, res) => {
   try {

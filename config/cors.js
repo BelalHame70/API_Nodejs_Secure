@@ -1,10 +1,18 @@
-const allowOrigin = require("./allowOrigin");
+const allowOrigin = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://ageentlab.netlify.app"
+];
 
 const corsOptions = {
   origin(origin, callback) {
     if (!origin) return callback(null, true);
 
-    if (allowOrigin.includes(origin)) {
+    const isAllowed =
+      allowOrigin.includes(origin) ||
+      /^https:\/\/[a-z0-9-]+--ageentlab\.netlify\.app$/.test(origin);
+
+    if (isAllowed) {
       return callback(null, true);
     }
 

@@ -2,6 +2,12 @@ const agentRepo = require("../repositories/agent");
 const axios = require("axios");
 const { getSignedFileUrl } = require("../utils/s3SignedUrl");
 
+const AI_AGENT_TYPE_MAP = {
+  "knowledge Base": "knowledge_base",
+  "analysis": "analysis",
+  "customer support": "customer_support"
+};
+
 const trainAgent = async (req, res) => {
   let agent;
 
@@ -20,16 +26,38 @@ const trainAgent = async (req, res) => {
       return res.status(400).json({ message: "Agent type is missing" });
     }
 
+    const aiBaseUrl = process.env.AI_SERVICE_URL?.replace(/\/$/, "");
+
+    if (!aiBaseUrl) {
+      return res.status(500).json({ message: "AI_SERVICE_URL is not set" });
+    }
+
+    const aiAgentType = AI_AGENT_TYPE_MAP[agent.agent_type];
+
+    if (!aiAgentType) {
+      return res.status(400).json({
+        message: "Unsupported agent type",
+        agent_type: agent.agent_type
+      });
+    }
+
     await agentRepo.updateAgent(agent.agent_id, { ai_status: "processing" });
 
     const signedUrl = await getSignedFileUrl(agent.file_key);
 
-    const aiResponse = await axios.post(`${process.env.AI_SERVICE_URL}/train`, {
+    const payload = {
       agent_id: agent.agent_id,
       file_url: signedUrl,
-      agent_type: agent.agent_type,
+      agent_type: aiAgentType,
       file_type: agent.file_type,
       file_name: agent.file_name
+    };
+
+    console.log("AI train URL:", `${aiBaseUrl}/train`);
+    console.log("AI train payload:", payload);
+
+    const aiResponse = await axios.post(`${aiBaseUrl}/train`, payload, {
+      timeout: 120000
     });
 
     if (aiResponse.data.success) {
@@ -43,20 +71,22 @@ const trainAgent = async (req, res) => {
         message: "Agent trained successfully",
         agent_id: agent.agent_id
       });
-    } else {
-      await agentRepo.updateAgent(agent.agent_id, {
-        ai_status: "failed",
-        status: "draft"
-      });
-
-      return res.status(500).json({
-        success: false,
-        message: "AI training failed",
-        error: aiResponse.data.message
-      });
     }
+
+    await agentRepo.updateAgent(agent.agent_id, {
+      ai_status: "failed",
+      status: "draft"
+    });
+
+    return res.status(500).json({
+      success: false,
+      message: "AI training failed",
+      error: aiResponse.data.message || aiResponse.data
+    });
   } catch (error) {
-    console.error("trainAgent error:", error);
+    console.error("AI status:", error.response?.status);
+    console.error("AI data:", error.response?.data);
+    console.error("trainAgent error:", error.message);
 
     if (agent) {
       await agentRepo.updateAgent(agent.agent_id, {
@@ -68,7 +98,8 @@ const trainAgent = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Training failed",
-      error: error.message
+      ai_status: error.response?.status,
+      ai_error: error.response?.data || error.message
     });
   }
 };

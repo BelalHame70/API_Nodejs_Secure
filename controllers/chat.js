@@ -41,8 +41,8 @@ const testAgent = async (req, res) => {
     console.log("AI ask payload:", payload);
 
     const { data } = await axios.post(chatUrl, payload, {
-  timeout: 120000
-});
+      timeout: aiConfig.chatTimeout || 120000
+    });
 
     return res.status(200).json({
       answer: data.answer ?? data.message ?? data.response ?? data,
@@ -51,7 +51,16 @@ const testAgent = async (req, res) => {
   } catch (error) {
     console.error("AI ask status:", error.response?.status);
     console.error("AI ask data:", error.response?.data);
+    console.error("AI ask code:", error.code);
     console.error("AI ask error:", error.message);
+
+    if (error.code === "ECONNABORTED") {
+      return res.status(504).json({
+        message: "AI service timeout",
+        details: "The AI service took too long to respond. Please try again.",
+        ai_error: error.message
+      });
+    }
 
     return res.status(500).json({
       message: "AI error",

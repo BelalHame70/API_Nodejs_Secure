@@ -1,18 +1,27 @@
 const AI_AGENT_CONFIG = {
   knowledge_base: {
     type: "knowledge_base",
-    baseUrl: "https://hayam-mostafa-ai-knowledge-agent.hf.space"
+    baseUrl: "https://hayam-mostafa-ai-knowledge-agent.hf.space",
+    trainPath: "/train",
+    chatPath: "/ask",
+    chatMessageKey: "question"
   },
 
   customer_support: {
     type: "customer_support",
-    baseUrl: "https://shrouk04-customer-support-rag.hf.space"
+    baseUrl: "https://shrouk04-customer-support-rag.hf.space",
+    trainPath: "/train",
+    chatPath: "/chat",
+    chatMessageKey: "message"
   },
 
   // مؤقت لحد ما لينك analysis يطلع
   analysis: {
     type: "analysis",
-    baseUrl: "https://hayam-mostafa-ai-knowledge-agent.hf.space"
+    baseUrl: "https://hayam-mostafa-ai-knowledge-agent.hf.space",
+    trainPath: "/train",
+    chatPath: "/ask",
+    chatMessageKey: "question"
   }
 };
 

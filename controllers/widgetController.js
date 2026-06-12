@@ -211,6 +211,7 @@ const askWidget = async (req, res) => {
     }
 
     const aiBaseUrl = aiConfig.baseUrl;
+    const chatUrl = `${aiBaseUrl}${aiConfig.chatPath}`;
 
     const session = await agentSessionRepo.findBySessionAndAgent(
       session_id,
@@ -229,17 +230,17 @@ const askWidget = async (req, res) => {
 
     const payload = {
       agent_id: widget.agent_id,
-      question: cleanMessage
+      [aiConfig.chatMessageKey]: cleanMessage
     };
 
-    console.log("AI widget ask URL:", `${aiBaseUrl}/ask`);
+    console.log("AI widget ask URL:", chatUrl);
     console.log("AI widget ask payload:", payload);
 
-    const { data } = await axios.post(`${aiBaseUrl}/ask`, payload, {
+    const { data } = await axios.post(chatUrl, payload, {
       timeout: 20000
     });
 
-    const answer = data.answer ?? data.message ?? data;
+    const answer = data.answer ?? data.message ?? data.response ?? data;
     const sources = data.sources ?? [];
 
     await agentSessionRepo.appendMessage(session_id, widget.agent_id, {

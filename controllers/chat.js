@@ -30,21 +30,22 @@ const testAgent = async (req, res) => {
     }
 
     const aiBaseUrl = aiConfig.baseUrl;
+    const chatUrl = `${aiBaseUrl}${aiConfig.chatPath}`;
 
     const payload = {
       agent_id: agent.agent_id,
-      question: message.trim()
+      [aiConfig.chatMessageKey]: message.trim()
     };
 
-    console.log("AI ask URL:", `${aiBaseUrl}/ask`);
+    console.log("AI ask URL:", chatUrl);
     console.log("AI ask payload:", payload);
 
-    const { data } = await axios.post(`${aiBaseUrl}/ask`, payload, {
+    const { data } = await axios.post(chatUrl, payload, {
       timeout: 20000
     });
 
     return res.status(200).json({
-      answer: data.answer ?? data.message ?? data,
+      answer: data.answer ?? data.message ?? data.response ?? data,
       sources: data.sources ?? []
     });
   } catch (error) {

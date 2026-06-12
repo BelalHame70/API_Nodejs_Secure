@@ -237,8 +237,8 @@ const askWidget = async (req, res) => {
     console.log("AI widget ask payload:", payload);
 
     const { data } = await axios.post(chatUrl, payload, {
-      timeout: 20000
-    });
+  timeout: 120000
+});
 
     const answer = data.answer ?? data.message ?? data.response ?? data;
     const sources = data.sources ?? [];

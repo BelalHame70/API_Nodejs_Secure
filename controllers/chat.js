@@ -41,8 +41,8 @@ const testAgent = async (req, res) => {
     console.log("AI ask payload:", payload);
 
     const { data } = await axios.post(chatUrl, payload, {
-      timeout: 20000
-    });
+  timeout: 120000
+});
 
     return res.status(200).json({
       answer: data.answer ?? data.message ?? data.response ?? data,

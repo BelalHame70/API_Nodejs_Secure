@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login - AgentLab</title>
+  <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-logo">A</div>
+
+      <h1>Admin Login</h1>
+      <p>Sign in to manage users, agents and conversations.</p>
+
+      <div class="error-box" id="loginError"></div>
+
+      <form id="adminLoginForm">
+        <label>Email</label>
+        <input id="emailInput" type="email" placeholder="admin@example.com" required />
+
+        <label>Password</label>
+        <input id="passwordInput" type="password" placeholder="Enter password" required />
+
+        <button type="submit">Sign in</button>
+      </form>
+
+      <span class="login-note">
+        Only admin accounts can access this dashboard.
+      </span>
+    </div>
+  </div>
+
+  <script src="/admin/admin-login.js"></script>
+</body>
+</html>

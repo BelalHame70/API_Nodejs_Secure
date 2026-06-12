@@ -1,13 +1,11 @@
 const Agent = require("../models/agent");
 
-// CRUD
 const createAgent = (data) => Agent.create(data);
 const findByUser = (user_id) => Agent.find({ user_id });
 const findById = (agent_id) => Agent.findOne({ agent_id });
 const updateAgent = (agent_id, data) => Agent.updateOne({ agent_id }, data);
 const deleteAgent = (agent_id) => Agent.deleteOne({ agent_id });
 
-// upload updates
 const updateAgentFile = (agent_id, fileData) =>
   Agent.updateOne(
     { agent_id },
@@ -34,6 +32,15 @@ const deleteFile = (agent_id) =>
     }
   );
 
+const findAllAgents = () =>
+  Agent.find().sort({ createdAt: -1 });
+
+const findAgentsByUserId = (user_id) =>
+  Agent.find({ user_id }).sort({ createdAt: -1 });
+
+const deleteAgentsByUserId = (user_id) =>
+  Agent.deleteMany({ user_id });
+
 module.exports = {
   createAgent,
   findByUser,
@@ -41,5 +48,8 @@ module.exports = {
   updateAgent,
   deleteAgent,
   updateAgentFile,
-  deleteFile
+  deleteFile,
+  findAllAgents,
+  findAgentsByUserId,
+  deleteAgentsByUserId
 };

@@ -1,14 +1,9 @@
 const axios = require("axios");
 const agentRepo = require("../repositories/agent");
+const { getAiConfigForAgent } = require("../config/aiAgents");
 
 const testAgent = async (req, res) => {
   try {
-    const aiBaseUrl = process.env.AI_SERVICE_URL?.replace(/\/$/, "");
-
-    if (!aiBaseUrl) {
-      return res.status(500).json({ message: "AI_SERVICE_URL is not set" });
-    }
-
     const { message } = req.body;
 
     if (!message || typeof message !== "string" || !message.trim()) {
@@ -24,6 +19,17 @@ const testAgent = async (req, res) => {
     if (agent.ai_status !== "ready") {
       return res.status(400).json({ message: "Agent is not trained yet" });
     }
+
+    const aiConfig = getAiConfigForAgent(agent.agent_type);
+
+    if (!aiConfig) {
+      return res.status(400).json({
+        message: "Unsupported agent type",
+        agent_type: agent.agent_type
+      });
+    }
+
+    const aiBaseUrl = aiConfig.baseUrl;
 
     const payload = {
       agent_id: agent.agent_id,

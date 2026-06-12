@@ -1,12 +1,7 @@
 const agentRepo = require("../repositories/agent");
 const axios = require("axios");
 const { getSignedFileUrl } = require("../utils/s3SignedUrl");
-
-const AI_AGENT_TYPE_MAP = {
-  "knowledge Base": "knowledge_base",
-  "analysis": "analysis",
-  "customer support": "customer_support"
-};
+const { getAiConfigForAgent } = require("../config/aiAgents");
 
 const trainAgent = async (req, res) => {
   let agent;
@@ -26,20 +21,17 @@ const trainAgent = async (req, res) => {
       return res.status(400).json({ message: "Agent type is missing" });
     }
 
-    const aiBaseUrl = process.env.AI_SERVICE_URL?.replace(/\/$/, "");
+    const aiConfig = getAiConfigForAgent(agent.agent_type);
 
-    if (!aiBaseUrl) {
-      return res.status(500).json({ message: "AI_SERVICE_URL is not set" });
-    }
-
-    const aiAgentType = AI_AGENT_TYPE_MAP[agent.agent_type];
-
-    if (!aiAgentType) {
+    if (!aiConfig) {
       return res.status(400).json({
         message: "Unsupported agent type",
         agent_type: agent.agent_type
       });
     }
+
+    const aiBaseUrl = aiConfig.baseUrl;
+    const aiAgentType = aiConfig.type;
 
     await agentRepo.updateAgent(agent.agent_id, { ai_status: "processing" });
 

@@ -23,6 +23,8 @@
     "resend": "^6.10.0",
     "sequelize": "^6.37.7",
     "sib-api-v3-sdk": "^8.5.0",
+    "swagger-jsdoc": "^6.3.0",
+    "swagger-ui-express": "^5.0.1",
     "uuid": "^13.0.0"
   },
   "devDependencies": {

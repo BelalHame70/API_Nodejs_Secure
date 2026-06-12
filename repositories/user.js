@@ -17,6 +17,22 @@ const updatePassword = (user_id, hashedPassword) =>
 const verifyUser = (user_id) =>
   User.updateOne({ user_id }, { verified: true });
 
+const findAllUsers = () =>
+  User.find().select("-password").sort({ createdAt: -1 });
+
+const findAllAdmins = () =>
+  User.find({ role: "admin" }).select("-password").sort({ createdAt: -1 });
+
+const updateRole = (user_id, role) =>
+  User.findOneAndUpdate(
+    { user_id },
+    { role },
+    { new: true }
+  ).select("-password");
+
+const deleteUserById = (user_id) =>
+  User.findOneAndDelete({ user_id });
+
 module.exports = {
   createUser,
   findByEmail,
@@ -24,5 +40,9 @@ module.exports = {
   updateByUserId,
   deleteByUserId,
   updatePassword,
-  verifyUser
+  verifyUser,
+  findAllUsers,
+  findAllAdmins,
+  updateRole,
+  deleteUserById
 };

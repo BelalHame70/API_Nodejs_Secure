@@ -1,12 +1,6 @@
 const AgentSession = require("../models/agentSession");
 
 const createSession = (data) => AgentSession.create(data);
-// createSession({
-//   session_id: "123",
-//   agent_id: "agent_1",
-//   visitor_id: "visitor_1",
-//   messages: []
-// }); 
 
 const findBySessionId = (session_id) =>
   AgentSession.findOne({ session_id });
@@ -14,7 +8,7 @@ const findBySessionId = (session_id) =>
 const findBySessionAndAgent = (session_id, agent_id) =>
   AgentSession.findOne({ session_id, agent_id });
 
-const appendMessage = (session_id, agent_id, messageObj) =>  //add message to session into array
+const appendMessage = (session_id, agent_id, messageObj) =>
   AgentSession.findOneAndUpdate(
     { session_id, agent_id },
     { $push: { messages: messageObj } },
@@ -24,10 +18,26 @@ const appendMessage = (session_id, agent_id, messageObj) =>  //add message to se
 const getMessages = (session_id, agent_id) =>
   AgentSession.findOne({ session_id, agent_id }).select("messages");
 
+const findSessionsByAgentId = (agent_id) =>
+  AgentSession.find({ agent_id }).sort({ created_at: -1 });
+
+const findSessionsByAgentIds = (agentIds) =>
+  AgentSession.find({ agent_id: { $in: agentIds } }).sort({ created_at: -1 });
+
+const deleteSessionsByAgentIds = (agentIds) =>
+  AgentSession.deleteMany({ agent_id: { $in: agentIds } });
+
+const countAllSessions = () =>
+  AgentSession.countDocuments();
+
 module.exports = {
   createSession,
   findBySessionId,
   findBySessionAndAgent,
   appendMessage,
-  getMessages
+  getMessages,
+  findSessionsByAgentId,
+  findSessionsByAgentIds,
+  deleteSessionsByAgentIds,
+  countAllSessions
 };

@@ -10,9 +10,9 @@ const refreshRepository = require("../repositories/refresh");
 const isProd = process.env.NODE_ENV === "production";
 
 const getCookieOptions = () => ({
-  httpOnly: true,// xss protection
+  httpOnly: true, // xss protection
   secure: isProd, // https only in production
-  sameSite: isProd ? "none" : "lax", //csrf
+  sameSite: isProd ? "none" : "lax", // csrf
   maxAge: 7 * 24 * 60 * 60 * 1000
 });
 
@@ -37,6 +37,7 @@ const register = async (req, res) => {
 
   try {
     const existingUser = await userRepository.findByEmail(email);
+
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -47,7 +48,8 @@ const register = async (req, res) => {
       user_id: uuid.v4(),
       name: name.trim(),
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role: "user"
     };
 
     const user = await userRepository.createUser(newUser);
@@ -61,6 +63,7 @@ const register = async (req, res) => {
     });
   } catch (error) {
     console.error("register controller error:", error);
+
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -78,11 +81,13 @@ const login = async (req, res) => {
 
   try {
     const user = await userRepository.findByEmail(email);
+
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
+
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -94,13 +99,20 @@ const login = async (req, res) => {
     }
 
     const accessToken = jwt.sign(
-      { user_id: user.user_id, email: user.email },
+      {
+        user_id: user.user_id,
+        email: user.email,
+        role: user.role || "user"
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
 
     const refreshToken = jwt.sign(
-      { user_id: user.user_id, email: user.email },
+      {
+        user_id: user.user_id,
+        email: user.email
+      },
       process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "7d" }
     );
@@ -115,10 +127,18 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       message: "User logged in successfully",
-      access_token: accessToken
+      access_token: accessToken,
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+        verified: user.verified
+      }
     });
   } catch (error) {
     console.error("login controller error:", error);
+
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -148,9 +168,12 @@ const logout = async (req, res) => {
       sameSite: isProd ? "none" : "lax"
     });
 
-    return res.status(200).json({ message: "User logged out successfully" });
+    return res.status(200).json({
+      message: "User logged out successfully"
+    });
   } catch (error) {
     console.error("logout controller error:", error);
+
     return res.status(500).json({
       message: "Server error",
       error: error.message
@@ -180,7 +203,10 @@ const refreshAccessToken = async (req, res) => {
 
     if (storedToken.expire.getTime() < Date.now()) {
       await refreshRepository.deleteRefreshToken(tokenHash);
-      return res.status(400).json({ message: "Refresh token expired" });
+
+      return res.status(400).json({
+        message: "Refresh token expired"
+      });
     }
 
     const decoded = jwt.verify(
@@ -188,18 +214,38 @@ const refreshAccessToken = async (req, res) => {
       process.env.REFRESH_TOKEN_SECRET
     );
 
+    const user = await userRepository.findByUserId(decoded.user_id);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found"
+      });
+    }
+
     const accessToken = jwt.sign(
-      { user_id: decoded.user_id, email: decoded.email },
+      {
+        user_id: user.user_id,
+        email: user.email,
+        role: user.role || "user"
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
 
     return res.status(200).json({
       message: "Access token refreshed successfully",
-      access_token: accessToken
+      access_token: accessToken,
+      user: {
+        user_id: user.user_id,
+        name: user.name,
+        email: user.email,
+        role: user.role || "user",
+        verified: user.verified
+      }
     });
   } catch (error) {
     console.error("refreshAccessToken controller error:", error);
+
     return res.status(500).json({
       message: "Server error",
       error: error.message

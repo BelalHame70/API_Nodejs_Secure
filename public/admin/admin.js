@@ -39,16 +39,16 @@ const loadOverview = async () => {
     if (!data.success) return;
 
     document.getElementById("totalUsers").textContent =
-      data.overview.total_users;
+      data.overview.total_users ?? 0;
 
     document.getElementById("totalAdmins").textContent =
-      data.overview.total_admins;
+      data.overview.total_admins ?? 0;
 
     document.getElementById("totalAgents").textContent =
-      data.overview.total_agents;
+      data.overview.total_agents ?? 0;
 
     document.getElementById("totalSessions").textContent =
-      data.overview.total_sessions;
+      data.overview.total_sessions ?? 0;
   } catch (error) {
     console.error(error);
   }
@@ -65,7 +65,7 @@ const loadUsers = async () => {
     const tbody = document.getElementById("usersTable");
     tbody.innerHTML = "";
 
-    if (!data.success || data.users.length === 0) {
+    if (!data.success || !data.users || data.users.length === 0) {
       tbody.innerHTML = `<tr><td colspan="5">No users found</td></tr>`;
       return;
     }
@@ -103,6 +103,11 @@ const loadUsers = async () => {
     });
   } catch (error) {
     console.error(error);
+
+    const tbody = document.getElementById("usersTable");
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="5">Error loading users</td></tr>`;
+    }
   }
 };
 
@@ -164,23 +169,31 @@ const viewMessages = async (userId) => {
 };
 
 const makeAdmin = async (userId) => {
-  await fetch(`${API_BASE_URL}/admin/users/${userId}/make-admin`, {
-    method: "PUT",
-    headers: authHeaders()
-  });
+  try {
+    await fetch(`${API_BASE_URL}/admin/users/${userId}/make-admin`, {
+      method: "PUT",
+      headers: authHeaders()
+    });
 
-  await loadOverview();
-  await loadUsers();
+    await loadOverview();
+    await loadUsers();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const removeAdmin = async (userId) => {
-  await fetch(`${API_BASE_URL}/admin/users/${userId}/remove-admin`, {
-    method: "PUT",
-    headers: authHeaders()
-  });
+  try {
+    await fetch(`${API_BASE_URL}/admin/users/${userId}/remove-admin`, {
+      method: "PUT",
+      headers: authHeaders()
+    });
 
-  await loadOverview();
-  await loadUsers();
+    await loadOverview();
+    await loadUsers();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const deleteUser = async (userId) => {
@@ -188,13 +201,17 @@ const deleteUser = async (userId) => {
 
   if (!ok) return;
 
-  await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
-    method: "DELETE",
-    headers: authHeaders()
-  });
+  try {
+    await fetch(`${API_BASE_URL}/admin/users/${userId}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
 
-  await loadOverview();
-  await loadUsers();
+    await loadOverview();
+    await loadUsers();
+  } catch (error) {
+    console.error(error);
+  }
 };
 
 const openCreateUser = () => {
@@ -223,28 +240,33 @@ const createUser = async () => {
       ? { name, email, password }
       : { name, email, password, role };
 
-  const res = await fetch(`${API_BASE_URL}${endpoint}`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(body)
-  });
+  try {
+    const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+      method: "POST",
+      headers: authHeaders(),
+      body: JSON.stringify(body)
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  if (!data.success) {
-    alert(data.message || "Error creating user");
-    return;
+    if (!data.success) {
+      alert(data.message || "Error creating user");
+      return;
+    }
+
+    closeCreateUser();
+
+    document.getElementById("nameInput").value = "";
+    document.getElementById("emailInput").value = "";
+    document.getElementById("passwordInput").value = "";
+    document.getElementById("roleInput").value = "user";
+
+    await loadOverview();
+    await loadUsers();
+  } catch (error) {
+    console.error(error);
+    alert("Something went wrong while creating the user");
   }
-
-  closeCreateUser();
-
-  document.getElementById("nameInput").value = "";
-  document.getElementById("emailInput").value = "";
-  document.getElementById("passwordInput").value = "";
-  document.getElementById("roleInput").value = "user";
-
-  await loadOverview();
-  await loadUsers();
 };
 
 const logoutBtn = document.querySelector(".logout-btn");

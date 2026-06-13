@@ -14,6 +14,26 @@
         <span>AgentLab Admin</span>
       </div>
 
+      <div class="sidebar-action">
+        <div class="sidebar-pill">
+          <span class="pill-plus">+</span>
+          <span>Admin Control</span>
+        </div>
+      </div>
+
+      <div class="sidebar-section-title">SYSTEM</div>
+
+      <div class="sidebar-link active">
+        <span class="sidebar-link-icon">▣</span>
+        <span>Dashboard</span>
+        <span class="status-dot"></span>
+      </div>
+
+      <div class="sidebar-footer-link">
+        <span>?</span>
+        <span>Help & Docs</span>
+      </div>
+
       <div class="profile admin-profile">
         <div>
           <h4 id="adminName">Admin</h4>
@@ -25,8 +45,9 @@
     <main class="main">
       <header class="topbar">
         <div>
-          <h1>Admin Dashboard</h1>
-          <p>Manage users, admins, agents and conversations.</p>
+          <div class="page-icon">▣</div>
+          <h1>Admin<br />Dashboard</h1>
+          <p>Manage users, admins, agents and conversations from one premium control center.</p>
         </div>
 
         <button class="logout-btn">Logout</button>
@@ -57,7 +78,11 @@
       <section class="content-grid">
         <div class="panel users-panel">
           <div class="panel-header">
-            <h2>Users Management</h2>
+            <div>
+              <h2>Users Management</h2>
+              <p>View, promote, remove and manage platform accounts.</p>
+            </div>
+
             <button onclick="openCreateUser()">+ Add User / Admin</button>
           </div>
 
@@ -82,7 +107,10 @@
 
         <div class="panel messages-panel">
           <div class="panel-header">
-            <h2>Agent Messages</h2>
+            <div>
+              <h2>Agent Messages</h2>
+              <p>Select a user to inspect sessions and conversations.</p>
+            </div>
           </div>
 
           <div id="messagesBox" class="messages-box">
@@ -96,6 +124,7 @@
   <div class="modal" id="createUserModal">
     <div class="modal-content">
       <h2>Create User / Admin</h2>
+      <p class="modal-subtitle">Add a new platform account with user or admin access.</p>
 
       <input id="nameInput" placeholder="Name" />
       <input id="emailInput" placeholder="Email" />

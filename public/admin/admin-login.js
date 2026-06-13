@@ -17,8 +17,13 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   hideError();
 
-  const email = document.getElementById("emailInput").value;
+  const email = document.getElementById("emailInput").value.trim();
   const password = document.getElementById("passwordInput").value;
+
+  if (!email || !password) {
+    showError("Email and password are required");
+    return;
+  }
 
   try {
     const res = await fetch(`${API_BASE_URL}/auth/login`, {

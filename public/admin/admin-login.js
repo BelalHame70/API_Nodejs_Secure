@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:9000/api/v1";
+const API_BASE_URL = "https://apinodejssecure-production.up.railway.app";
 
 const form = document.getElementById("adminLoginForm");
 const errorBox = document.getElementById("loginError");

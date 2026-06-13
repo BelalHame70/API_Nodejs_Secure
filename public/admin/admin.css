@@ -1,9 +1,7 @@
 :root {
   --bg: #050505;
-  --bg-soft: #080808;
   --panel: #171717;
   --panel-2: #1b1b1b;
-  --panel-3: #101010;
   --border: rgba(255, 255, 255, 0.08);
   --border-strong: rgba(255, 255, 255, 0.14);
   --text: #ffffff;
@@ -11,7 +9,6 @@
   --muted-2: #71717a;
   --blue: #1457ff;
   --blue-2: #2563ff;
-  --blue-soft: rgba(20, 87, 255, 0.15);
   --green: #16d69b;
   --red: #ef4444;
   --shadow: 0 30px 100px rgba(0, 0, 0, 0.65);
@@ -88,7 +85,7 @@ button {
   align-items: center;
   gap: 12px;
   height: 58px;
-  margin-bottom: 20px;
+  margin-bottom: 28px;
   padding-bottom: 22px;
   border-bottom: 1px solid var(--border);
   font-size: 18px;
@@ -110,85 +107,26 @@ button {
   font-size: 15px;
 }
 
-.sidebar-action {
+.logout-btn {
   position: relative;
   z-index: 1;
-  margin: 18px 0 28px;
-}
-
-.sidebar-pill {
-  height: 48px;
   width: 100%;
-  border-radius: 14px;
+  height: 50px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 15px;
   background: var(--blue);
   color: white;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 0 16px;
-  font-weight: 850;
-  box-shadow: 0 18px 45px rgba(20, 87, 255, 0.28);
-}
-
-.pill-plus {
-  font-size: 24px;
-  line-height: 1;
-  font-weight: 300;
-}
-
-.sidebar-section-title {
-  position: relative;
-  z-index: 1;
-  color: var(--muted-2);
-  font-size: 12px;
+  cursor: pointer;
   font-weight: 900;
-  letter-spacing: 0.18em;
-  margin-bottom: 13px;
+  font-size: 15px;
+  box-shadow: 0 18px 45px rgba(20, 87, 255, 0.28);
+  transition: 0.2s ease;
 }
 
-.sidebar-link {
-  position: relative;
-  z-index: 1;
-  height: 42px;
-  border-radius: 12px;
-  color: #d4d4d8;
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 0 12px;
-  font-weight: 700;
-}
-
-.sidebar-link.active {
-  background: rgba(255, 255, 255, 0.03);
-}
-
-.sidebar-link-icon {
-  color: var(--muted);
-  font-size: 14px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  margin-left: auto;
-  background: var(--green);
-  border-radius: 999px;
-  box-shadow: 0 0 16px rgba(22, 214, 155, 0.8);
-}
-
-.sidebar-footer-link {
-  position: absolute;
-  left: 22px;
-  right: 22px;
-  bottom: 122px;
-  height: 54px;
-  border-top: 1px solid var(--border);
-  color: #c7c7c7;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
+.logout-btn:hover {
+  background: var(--blue-2);
+  transform: translateY(-1px);
 }
 
 .profile {
@@ -254,54 +192,23 @@ button {
   margin-bottom: 28px;
 }
 
-.page-icon {
-  width: 54px;
-  height: 54px;
-  margin: 0 auto 18px 0;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--border-strong);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #cfcfcf;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
-}
-
 .topbar h1 {
   margin: 0;
-  max-width: 760px;
-  font-size: clamp(34px, 4vw, 56px);
-  line-height: 0.98;
+  max-width: 1000px;
+  font-size: clamp(42px, 5vw, 72px);
+  line-height: 0.95;
   font-weight: 950;
-  letter-spacing: -2px;
+  letter-spacing: -3px;
+  white-space: nowrap;
 }
 
 .topbar p {
-  margin: 14px 0 0;
-  max-width: 700px;
+  margin: 16px 0 0;
+  max-width: 760px;
   color: #d7d7d7;
   font-size: 15px;
   font-weight: 600;
   line-height: 1.7;
-}
-
-.logout-btn {
-  height: 46px;
-  padding: 0 18px;
-  border: 1px solid var(--border-strong);
-  border-radius: 14px;
-  background: rgba(24, 24, 24, 0.85);
-  color: white;
-  cursor: pointer;
-  font-weight: 800;
-  transition: 0.2s ease;
-}
-
-.logout-btn:hover {
-  background: #222;
-  border-color: rgba(255, 255, 255, 0.22);
-  transform: translateY(-1px);
 }
 
 /* ================= Cards ================= */
@@ -362,9 +269,13 @@ button {
 
 .content-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.85fr);
+  grid-template-columns: 1fr;
   gap: 22px;
   align-items: start;
+}
+
+.content-grid.single {
+  max-width: none;
 }
 
 .panel {
@@ -374,12 +285,8 @@ button {
     rgba(20, 20, 20, 0.95);
   border: 1px solid var(--border);
   border-radius: 26px;
-  padding: 22px;
+  padding: 24px;
   box-shadow: var(--shadow);
-}
-
-.messages-panel {
-  min-height: 478px;
 }
 
 .panel-header {
@@ -387,31 +294,31 @@ button {
   justify-content: space-between;
   align-items: center;
   gap: 14px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .panel-header h2 {
   margin: 0;
-  font-size: 24px;
+  font-size: 28px;
   line-height: 1;
   font-weight: 900;
   letter-spacing: -0.7px;
 }
 
 .panel-header p {
-  margin: 8px 0 0;
+  margin: 9px 0 0;
   color: var(--muted-2);
   font-size: 13px;
   line-height: 1.5;
 }
 
 .panel-header button {
-  height: 44px;
+  height: 48px;
   border: none;
   background: var(--blue);
   color: white;
-  padding: 0 16px;
-  border-radius: 14px;
+  padding: 0 20px;
+  border-radius: 15px;
   cursor: pointer;
   font-weight: 850;
   white-space: nowrap;
@@ -439,7 +346,7 @@ button {
 
 .users-table th {
   text-align: left;
-  padding: 0 10px 14px 0;
+  padding: 0 10px 16px 0;
   color: var(--muted-2);
   font-size: 12px;
   font-weight: 900;
@@ -449,7 +356,7 @@ button {
 }
 
 .users-table td {
-  padding: 16px 10px 16px 0;
+  padding: 18px 10px 18px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.07);
   color: #f5f5f5;
   font-size: 14px;
@@ -462,15 +369,15 @@ button {
 }
 
 .name-col {
-  width: 19%;
+  width: 22%;
 }
 
 .email-col {
-  width: 35%;
+  width: 34%;
 }
 
 .role-col {
-  width: 12%;
+  width: 13%;
 }
 
 .verified-col {
@@ -478,7 +385,7 @@ button {
 }
 
 .actions-col {
-  width: 22%;
+  width: 19%;
 }
 
 .users-table td:nth-child(1),
@@ -517,15 +424,21 @@ button {
   color: #49e2b2;
 }
 
+.actions-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+
 .action-btn {
   border: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 33px;
-  margin: 3px 4px 3px 0;
-  padding: 8px 10px;
-  border-radius: 10px;
+  min-height: 36px;
+  padding: 9px 13px;
+  border-radius: 11px;
   font-size: 12px;
   line-height: 1;
   font-weight: 850;
@@ -565,56 +478,6 @@ button {
 
 .gray:hover {
   background: rgba(255, 255, 255, 0.13);
-}
-
-/* ================= Messages ================= */
-
-.messages-box {
-  color: #c7c7c7;
-  line-height: 1.7;
-  max-height: 640px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
-}
-
-.messages-box::-webkit-scrollbar {
-  width: 7px;
-}
-
-.messages-box::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
-  border-radius: 999px;
-}
-
-.message-card {
-  background: rgba(9, 9, 9, 0.82);
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  padding: 16px;
-  margin-bottom: 14px;
-}
-
-.message-card h4 {
-  margin: 0 0 8px;
-  font-size: 14px;
-  color: #ffffff;
-}
-
-.message-card p {
-  margin: 7px 0;
-  color: #bbbbbb;
-  font-size: 14px;
-}
-
-.message-card strong {
-  color: #ffffff;
-}
-
-.message-card hr {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 12px 0;
 }
 
 /* ================= Modal ================= */
@@ -942,18 +805,18 @@ button {
     padding: 28px;
   }
 
-  .content-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .messages-panel {
-    min-height: 300px;
+  .topbar h1 {
+    font-size: 54px;
   }
 }
 
 @media (max-width: 1050px) {
   .cards {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .topbar h1 {
+    white-space: normal;
   }
 
   .login-card {
@@ -999,14 +862,6 @@ button {
     padding: 18px;
   }
 
-  .sidebar-footer-link {
-    position: relative;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    margin-top: 22px;
-  }
-
   .profile {
     position: relative;
     left: auto;
@@ -1024,10 +879,6 @@ button {
   .topbar {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .logout-btn {
-    width: 100%;
   }
 
   .cards {

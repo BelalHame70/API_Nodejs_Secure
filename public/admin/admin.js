@@ -73,6 +73,11 @@ const loadUsers = async () => {
     data.users.forEach((user) => {
       const tr = document.createElement("tr");
 
+      const roleButton =
+        user.role === "admin"
+          ? `<button class="action-btn gray" onclick="removeAdmin('${user.user_id}')">Remove</button>`
+          : `<button class="action-btn blue" onclick="makeAdmin('${user.user_id}')">Admin</button>`;
+
       tr.innerHTML = `
         <td title="${user.name || "-"}">${user.name || "-"}</td>
         <td title="${user.email || "-"}">${user.email || "-"}</td>
@@ -83,19 +88,12 @@ const loadUsers = async () => {
         </td>
         <td>${user.verified ? "Yes" : "No"}</td>
         <td>
-          <button class="action-btn blue" onclick="viewMessages('${user.user_id}')">
-            Msgs
-          </button>
-
-          ${
-            user.role === "admin"
-              ? `<button class="action-btn gray" onclick="removeAdmin('${user.user_id}')">Remove</button>`
-              : `<button class="action-btn blue" onclick="makeAdmin('${user.user_id}')">Admin</button>`
-          }
-
-          <button class="action-btn red" onclick="deleteUser('${user.user_id}')">
-            Delete
-          </button>
+          <div class="actions-wrap">
+            ${roleButton}
+            <button class="action-btn red" onclick="deleteUser('${user.user_id}')">
+              Delete
+            </button>
+          </div>
         </td>
       `;
 
@@ -105,66 +103,10 @@ const loadUsers = async () => {
     console.error(error);
 
     const tbody = document.getElementById("usersTable");
+
     if (tbody) {
       tbody.innerHTML = `<tr><td colspan="5">Error loading users</td></tr>`;
     }
-  }
-};
-
-const viewMessages = async (userId) => {
-  const box = document.getElementById("messagesBox");
-  box.innerHTML = "Loading messages...";
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/admin/users/${userId}/messages`, {
-      headers: authHeaders()
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      box.innerHTML = "Could not load messages.";
-      return;
-    }
-
-    if (!data.sessions || data.sessions.length === 0) {
-      box.innerHTML = "No messages found for this user.";
-      return;
-    }
-
-    box.innerHTML = "";
-
-    data.sessions.forEach((session) => {
-      const card = document.createElement("div");
-      card.className = "message-card";
-
-      const messages = session.messages || [];
-
-      card.innerHTML = `
-        <h4>Session: ${session.session_id}</h4>
-        <p>Agent ID: ${session.agent_id}</p>
-        <hr />
-        ${
-          messages.length
-            ? messages
-                .map(
-                  (msg) => `
-                    <p>
-                      <strong>${msg.role || msg.sender || "message"}:</strong>
-                      ${msg.content || msg.message || ""}
-                    </p>
-                  `
-                )
-                .join("")
-            : "<p>No messages inside this session.</p>"
-        }
-      `;
-
-      box.appendChild(card);
-    });
-  } catch (error) {
-    console.error(error);
-    box.innerHTML = "Error loading messages.";
   }
 };
 

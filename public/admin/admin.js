@@ -1,4 +1,4 @@
-const API_BASE_URL = "https://apinodejssecure-production.up.railway.app";
+const API_BASE_URL = "https://apinodejssecure-production.up.railway.app/api/v1";
 
 if (!localStorage.getItem("access_token")) {
   window.location.href = "/admin-login";

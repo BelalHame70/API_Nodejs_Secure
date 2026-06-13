@@ -43,9 +43,9 @@ const createWidget = async (req, res) => {
       welcome_message: welcome_message || "Hi! How can I help you?",
       position: position || "bottom-right",
       theme_config: {
-        primaryColor: theme_config?.primaryColor || "#111827",
-        textColor: theme_config?.textColor || "#ffffff"
-      }
+  primaryColor: theme_config?.primaryColor || "#0057ff",
+  textColor: theme_config?.textColor || "#ffffff"
+}
     });
 
     const webUrl = process.env.WEB_URL?.replace(/\/$/, "");

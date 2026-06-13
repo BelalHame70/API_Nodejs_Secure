@@ -5,7 +5,8 @@ const allowOrigin = [
   "http://127.0.0.1:5500",
   "https://ageentlab.netlify.app",
   "https://6a0758f4391b571ae55e8a24--ageentlab.netlify.app",
-  "http://localhost:9000"
+  "http://localhost:9000",
+  "https://apinodejssecure-production.up.railway.app"
 ];
 
 const corsOptions = {

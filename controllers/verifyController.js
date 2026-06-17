@@ -3,6 +3,9 @@ const otpRepo = require("../repositories/otp");
 const userRepo = require("../repositories/user");
 const { sendVerificationEmail } = require("../utils/mailService");
 
+const getFrontendUrl = () => process.env.FRONTEND_URL || "http://localhost:3000";
+const getApiUrl = () => process.env.API_URL || "http://localhost:9000";
+
 const sendVerification = async (user) => {
   const code = crypto.randomBytes(6).toString("hex");
   const expire = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -11,10 +14,10 @@ const sendVerification = async (user) => {
     user_id: user.user_id,
     otp_number: code,
     expire_at: expire,
-    used: false
+    used: false,
   });
 
-  const link = `${process.env.API_URL}/api/v1/auth/verify-account?code=${code}`;
+  const link = `${getApiUrl()}/api/v1/auth/verify-account?code=${code}`;
   const html = `<p>Click <a href="${link}">here</a> to verify your account</p>`;
 
   return sendVerificationEmail(user.email, html, "Verify Your Account");
@@ -38,18 +41,16 @@ const resendVerification = async (req, res) => {
       return res.status(400).json({ message: "Account already verified" });
     }
 
-    sendVerification(user).catch((error) => {
-      console.error("resendVerification email error:", error);
-    });
+    await sendVerification(user);
 
     return res.status(200).json({
-      message: "Verification code sent successfully"
+      message: "Verification code sent successfully",
     });
   } catch (error) {
     console.error("resendVerification controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -57,35 +58,32 @@ const resendVerification = async (req, res) => {
 const verifyAccount = async (req, res) => {
   const { code } = req.query;
 
+  const successRedirect = `${getFrontendUrl()}/auth?mode=login&verified=success`;
+  const failedRedirect = `${getFrontendUrl()}/auth?mode=login&verified=failed`;
+
   if (!code) {
-    return res.status(400).json({ message: "Code required" });
+    return res.redirect(failedRedirect);
   }
 
   try {
     const record = await otpRepo.findValidOtp(code);
 
     if (!record) {
-     if (!record) {
-  return res.redirect(`${process.env.FRONTEND_URL}/auth?mode=login&verified=failed`);
-}
+      return res.redirect(failedRedirect);
     }
 
     await otpRepo.markUsed(record._id);
     await userRepo.verifyUser(record.user_id);
 
-  return res.redirect(`${process.env.FRONTEND_URL}/auth?mode=login&verified=success`);
-
+    return res.redirect(successRedirect);
   } catch (error) {
     console.error("verifyAccount controller error:", error);
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
+    return res.redirect(failedRedirect);
   }
 };
 
 module.exports = {
   sendVerification,
   resendVerification,
-  verifyAccount
+  verifyAccount,
 };

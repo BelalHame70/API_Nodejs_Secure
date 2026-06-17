@@ -1,10 +1,17 @@
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const { v4: uuid } = require("uuid");
+
+const { sendResetPasswordEmail } = require("../utils/mailService");
 
 const userRepository = require("../repositories/user");
 const tokenPasswordRepository = require("../repositories/tokenpassword");
 const emailChangeRepository = require("../repositories/EmailChangeToken");
 const { sendVerificationEmail } = require("../utils/mailService");
+
+const getFrontendUrl = () => process.env.FRONTEND_URL || "http://localhost:3000";
+const getApiUrl = () => process.env.API_URL || "http://localhost:9000";
 
 // GET /profile
 const getUserProfile = async (req, res) => {
@@ -19,13 +26,13 @@ const getUserProfile = async (req, res) => {
       user_id: foundUser.user_id,
       name: foundUser.name,
       email: foundUser.email,
-      verified: foundUser.verified
+      verified: foundUser.verified,
     });
   } catch (error) {
     console.error("getUserProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -40,7 +47,7 @@ const updateNameProfile = async (req, res) => {
 
   try {
     await userRepository.updateByUserId(req.user.user_id, {
-      name: name.trim()
+      name: name.trim(),
     });
 
     return res.status(200).json({ message: "Name updated" });
@@ -48,7 +55,7 @@ const updateNameProfile = async (req, res) => {
     console.error("updateNameProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -92,7 +99,7 @@ const requestEmailChange = async (req, res) => {
       used: false,
     });
 
-    const verifyLink = `${process.env.API_URL}/api/v1/auth/profile-email-confirm?token=${token}`;
+    const verifyLink = `${getApiUrl()}/api/v1/auth/profile-email-confirm?token=${token}`;
 
     const html = `
       <p>Confirm your new email by clicking:</p>
@@ -100,11 +107,7 @@ const requestEmailChange = async (req, res) => {
       <p>This link expires in 1 hour.</p>
     `;
 
-    sendVerificationEmail(newEmail, html, "Verify your new email").catch(
-      (error) => {
-        console.error("requestEmailChange email error:", error);
-      }
-    );
+    await sendVerificationEmail(newEmail, html, "Verify your new email");
 
     return res.status(200).json({
       message: "Verification link sent to new email",
@@ -122,8 +125,8 @@ const requestEmailChange = async (req, res) => {
 const confirmEmailChange = async (req, res) => {
   const { token } = req.query;
 
-  const successRedirect = `${process.env.FRONTEND_URL}/dashboard/settings?emailChanged=success`;
-  const failedRedirect = `${process.env.FRONTEND_URL}/dashboard/settings?emailChanged=failed`;
+  const successRedirect = `${getFrontendUrl()}/dashboard/settings?emailChanged=success`;
+  const failedRedirect = `${getFrontendUrl()}/dashboard/settings?emailChanged=failed`;
 
   if (!token) {
     return res.redirect(failedRedirect);
@@ -163,13 +166,14 @@ const confirmEmailChange = async (req, res) => {
     return res.redirect(failedRedirect);
   }
 };
+
 // DELETE /profile
 const deleteOneProfile = async (req, res) => {
   const { confirmation } = req.body;
 
   if (confirmation !== "DELETE") {
     return res.status(400).json({
-      message: "Confirmation text does not match"
+      message: "Confirmation text does not match",
     });
   }
 
@@ -187,7 +191,7 @@ const deleteOneProfile = async (req, res) => {
     console.error("deleteOneProfile controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -205,7 +209,7 @@ const resetPasswordRequest = async (req, res) => {
 
     if (!user) {
       return res.status(200).json({
-        message: "If account exists, check your email"
+        message: "If account exists, check your email",
       });
     }
 
@@ -217,26 +221,22 @@ const resetPasswordRequest = async (req, res) => {
       userId: user.user_id,
       tokenHash,
       expiresAt,
-      used: false
+      used: false,
     });
 
-   const resetLink = `${process.env.FRONTEND_URL}/auth?mode=set-password&token=${token}`;
+    const resetLink = `${getFrontendUrl()}/auth?mode=set-password&token=${token}`;
     const html = `<p>Click <a href="${resetLink}">here</a> to reset your password</p>`;
 
-    sendVerificationEmail(user.email, html, "Reset Your Password").catch(
-      (error) => {
-        console.error("resetPasswordRequest email error:", error);
-      }
-    );
+    await sendVerificationEmail(user.email, html, "Reset Your Password");
 
     return res.status(200).json({
-      message: "Password reset link sent to email"
+      message: "Password reset link sent to email",
     });
   } catch (error) {
     console.error("resetPasswordRequest controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -252,7 +252,7 @@ const resetPasswordConfirm = async (req, res) => {
 
   if (newPassword.length < 6) {
     return res.status(400).json({
-      message: "New password must be at least 6 characters"
+      message: "New password must be at least 6 characters",
     });
   }
 
@@ -263,13 +263,13 @@ const resetPasswordConfirm = async (req, res) => {
     await tokenPasswordRepository.markTokenUsed(tokenId);
 
     return res.status(200).json({
-      message: "Password changed successfully"
+      message: "Password changed successfully",
     });
   } catch (error) {
     console.error("resetPasswordConfirm controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -284,7 +284,7 @@ const changePasswordInside = async (req, res) => {
 
   if (newPassword.length < 6) {
     return res.status(400).json({
-      message: "New password must be at least 6 characters"
+      message: "New password must be at least 6 characters",
     });
   }
 
@@ -296,23 +296,25 @@ const changePasswordInside = async (req, res) => {
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
+
     if (!isMatch) {
       return res.status(400).json({
-        message: "Old password is incorrect"
+        message: "Old password is incorrect",
       });
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
+
     await userRepository.updatePassword(req.user.user_id, hashedPassword);
 
     return res.status(200).json({
-      message: "Password changed successfully"
+      message: "Password changed successfully",
     });
   } catch (error) {
     console.error("changePasswordInside controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -325,5 +327,6 @@ module.exports = {
   deleteOneProfile,
   resetPasswordRequest,
   resetPasswordConfirm,
-  changePasswordInside
+  changePasswordInside,
 };
+

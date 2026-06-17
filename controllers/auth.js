@@ -30,9 +30,9 @@ const register = async (req, res) => {
   }
 
   if (password.length < 6) {
-    return res
-      .status(400)
-      .json({ message: "Password must be at least 6 characters" });
+    return res.status(400).json({
+      message: "Password must be at least 6 characters",
+    });
   }
 
   try {
@@ -49,24 +49,22 @@ const register = async (req, res) => {
       name: name.trim(),
       email,
       password: hashedPassword,
-      role: "user"
+      role: "user",
     };
 
     const user = await userRepository.createUser(newUser);
 
-    sendVerification(user).catch((error) => {
-      console.error("register verification email error:", error);
-    });
+    await sendVerification(user);
 
     return res.status(201).json({
-      message: "User registered successfully. Please verify your account."
+      message: "User registered successfully. Please verify your account.",
     });
   } catch (error) {
     console.error("register controller error:", error);
 
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };

@@ -11,7 +11,7 @@ const sendVerificationEmail = async (email, html, subject) => {
 
     const result = await apiInstance.sendTransacEmail({
       sender: {
-        email: "authappmy@gmail.com", 
+        email: "belahamed0@gmail.com", 
         name: "Agent Lap Email"
       },
       to: [{ email }],

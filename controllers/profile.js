@@ -89,10 +89,11 @@ const requestEmailChange = async (req, res) => {
       newEmail,
       tokenHash,
       expiresAt,
-      used: false
+      used: false,
     });
 
-    const verifyLink = `${process.env.WEB_URL}/api/v1/auth/profile-email-confirm?token=${token}`;
+    const verifyLink = `${process.env.API_URL}/api/v1/auth/profile-email-confirm?token=${token}`;
+
     const html = `
       <p>Confirm your new email by clicking:</p>
       <p><a href="${verifyLink}">Verify new email</a></p>
@@ -106,13 +107,13 @@ const requestEmailChange = async (req, res) => {
     );
 
     return res.status(200).json({
-      message: "Verification link sent to new email"
+      message: "Verification link sent to new email",
     });
   } catch (error) {
     console.error("requestEmailChange controller error:", error);
     return res.status(500).json({
       message: "Server error",
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -121,8 +122,11 @@ const requestEmailChange = async (req, res) => {
 const confirmEmailChange = async (req, res) => {
   const { token } = req.query;
 
+  const successRedirect = `${process.env.FRONTEND_URL}/dashboard/settings?emailChanged=success`;
+  const failedRedirect = `${process.env.FRONTEND_URL}/dashboard/settings?emailChanged=failed`;
+
   if (!token) {
-    return res.status(400).json({ message: "Token is required" });
+    return res.redirect(failedRedirect);
   }
 
   try {
@@ -130,39 +134,35 @@ const confirmEmailChange = async (req, res) => {
     const requestRecord = await emailChangeRepository.findByTokenHash(tokenHash);
 
     if (!requestRecord) {
-      return res.status(400).json({ message: "Invalid token" });
+      return res.redirect(failedRedirect);
     }
 
     if (requestRecord.used) {
-      return res.status(400).json({ message: "Token already used" });
+      return res.redirect(failedRedirect);
     }
 
     if (requestRecord.expiresAt.getTime() < Date.now()) {
-      return res.status(400).json({ message: "Token expired" });
+      return res.redirect(failedRedirect);
     }
 
     const existingUser = await userRepository.findByEmail(requestRecord.newEmail);
     if (existingUser) {
-      return res.status(400).json({ message: "Email already in use" });
+      return res.redirect(failedRedirect);
     }
 
     await userRepository.updateByUserId(requestRecord.userId, {
       email: requestRecord.newEmail,
-      verified: true
+      verified: true,
     });
 
     await emailChangeRepository.markUsed(requestRecord._id);
 
-    return res.status(200).json({ message: "Email updated successfully" });
+    return res.redirect(successRedirect);
   } catch (error) {
     console.error("confirmEmailChange controller error:", error);
-    return res.status(500).json({
-      message: "Server error",
-      error: error.message
-    });
+    return res.redirect(failedRedirect);
   }
 };
-
 // DELETE /profile
 const deleteOneProfile = async (req, res) => {
   const { confirmation } = req.body;
@@ -220,7 +220,7 @@ const resetPasswordRequest = async (req, res) => {
       used: false
     });
 
-    const resetLink = `${process.env.WEB_URL}/api/v1/auth/change-password?token=${token}`;
+   const resetLink = `${process.env.FRONTEND_URL}/auth?mode=set-password&token=${token}`;
     const html = `<p>Click <a href="${resetLink}">here</a> to reset your password</p>`;
 
     sendVerificationEmail(user.email, html, "Reset Your Password").catch(

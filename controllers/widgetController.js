@@ -48,7 +48,7 @@ const createWidget = async (req, res) => {
 }
     });
 
-    const webUrl = process.env.WEB_URL?.replace(/\/$/, "");
+    const webUrl = process.env.API_URL?.replace(/\/$/, "");
 
     if (!webUrl) {
       return res.status(500).json({ message: "WEB_URL is not set" });

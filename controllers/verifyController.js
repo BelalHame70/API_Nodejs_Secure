@@ -14,7 +14,7 @@ const sendVerification = async (user) => {
     used: false
   });
 
-  const link = `${process.env.WEB_URL}/api/v1/auth/verify-account?code=${code}`;
+  const link = `${process.env.API_URL}/api/v1/auth/verify-account?code=${code}`;
   const html = `<p>Click <a href="${link}">here</a> to verify your account</p>`;
 
   return sendVerificationEmail(user.email, html, "Verify Your Account");
@@ -65,15 +65,16 @@ const verifyAccount = async (req, res) => {
     const record = await otpRepo.findValidOtp(code);
 
     if (!record) {
-      return res.status(400).json({ message: "Invalid or expired code" });
+     if (!record) {
+  return res.redirect(`${process.env.FRONTEND_URL}/auth?mode=login&verified=failed`);
+}
     }
 
     await otpRepo.markUsed(record._id);
     await userRepo.verifyUser(record.user_id);
 
-    return res.status(200).json({
-      message: "Account verified successfully"
-    });
+  return res.redirect(`${process.env.FRONTEND_URL}/auth?mode=login&verified=success`);
+
   } catch (error) {
     console.error("verifyAccount controller error:", error);
     return res.status(500).json({

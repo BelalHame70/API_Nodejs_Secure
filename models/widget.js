@@ -12,15 +12,15 @@ const widgetSchema = new mongoose.Schema(
     expire_at: { type: Date, default: null, index: true },
 
     welcome_message: {
-  ar: {
-    type: String,
-    default: "مرحباً! كيف يمكنني مساعدتك؟"
-  },
-  en: {
-    type: String,
-    default: "Hi! How can I help you?"
-  }
-},
+      ar: {
+        type: String,
+        default: "مرحباً! كيف يمكنني مساعدتك؟"
+      },
+      en: {
+        type: String,
+        default: "Hi! How can I help you?"
+      }
+    },
 
     theme_config: {
       primaryColor: { type: String, default: "#111827" },

@@ -6,10 +6,30 @@ const { v4: uuid } = require("uuid");
 const { generateApiKey, hashApiKey } = require("../utils/apiKeys");
 const { getAiConfigForAgent } = require("../config/aiAgents");
 
+const defaultWelcomeMessage = {
+  ar: "مرحباً! كيف يمكنني مساعدتك؟",
+  en: "Hi! How can I help you?"
+};
+
+const normalizeWelcomeMessage = (welcome_message) => {
+  if (!welcome_message) return defaultWelcomeMessage;
+
+  if (typeof welcome_message === "string") {
+    return {
+      ar: welcome_message,
+      en: welcome_message
+    };
+  }
+
+  return {
+    ar: welcome_message.ar || defaultWelcomeMessage.ar,
+    en: welcome_message.en || defaultWelcomeMessage.en
+  };
+};
+
 const createWidget = async (req, res) => {
   try {
     const agentId = req.params.agentId;
-
     const { welcome_message, position, theme_config, expire_at } = req.body || {};
 
     const agent = await agentRepo.findById(agentId);
@@ -25,29 +45,42 @@ const createWidget = async (req, res) => {
     const existing = await widgetRepository.getWidgetByAgentId(agent.agent_id);
 
     if (existing) {
+      const webUrl = process.env.API_URL?.replace(/\/$/, "");
+
+      if (!webUrl) {
+        return res.status(500).json({ message: "WEB_URL is not set" });
+      }
+
+      const publicKey = existing.public_key;
+      const embed_code = publicKey
+        ? `<script src="${webUrl}/widget.js" data-public-key="${publicKey}" defer></script>`
+        : null;
+
       return res.status(200).json({
         message: "Widget already exists",
-        widget: existing
+        widget: existing,
+        publicKey,
+        embed_code
       });
     }
 
     const publicKey = generateApiKey();
     const api_key_hash = hashApiKey(publicKey);
 
-  const widget = await widgetRepository.createWidget({
-  widget_id: uuid(),
-  agent_id: agent.agent_id,
-  public_key: publicKey,
-  api_key_hash,
-  active: true,
-  expire_at: expire_at || null,
-  welcome_message: welcome_message || "Hi! How can I help you?",
-  position: position || "bottom-right",
-  theme_config: {
-    primaryColor: theme_config?.primaryColor || "#0057ff",
-    textColor: theme_config?.textColor || "#ffffff"
-  }
-});
+    const widget = await widgetRepository.createWidget({
+      widget_id: uuid(),
+      agent_id: agent.agent_id,
+      public_key: publicKey,
+      api_key_hash,
+      active: true,
+      expire_at: expire_at || null,
+      welcome_message: normalizeWelcomeMessage(welcome_message),
+      position: position || "bottom-right",
+      theme_config: {
+        primaryColor: theme_config?.primaryColor || "#0057ff",
+        textColor: theme_config?.textColor || "#ffffff"
+      }
+    });
 
     const webUrl = process.env.API_URL?.replace(/\/$/, "");
 
@@ -96,8 +129,9 @@ const getWidget = async (req, res) => {
     }
 
     const publicKey = widget.public_key;
-
-    const embed_code = `<script src="${webUrl}/widget.js" data-public-key="${publicKey}" defer></script>`;
+    const embed_code = publicKey
+      ? `<script src="${webUrl}/widget.js" data-public-key="${publicKey}" defer></script>`
+      : null;
 
     return res.status(200).json({
       message: "Widget returned",
@@ -226,8 +260,7 @@ const askWidget = async (req, res) => {
       });
     }
 
-    const aiBaseUrl = aiConfig.baseUrl;
-    const chatUrl = `${aiBaseUrl}${aiConfig.chatPath}`;
+    const chatUrl = `${aiConfig.baseUrl}${aiConfig.chatPath}`;
 
     const session = await agentSessionRepo.findBySessionAndAgent(
       session_id,
@@ -249,12 +282,9 @@ const askWidget = async (req, res) => {
       [aiConfig.chatMessageKey]: cleanMessage
     };
 
-    console.log("AI widget ask URL:", chatUrl);
-    console.log("AI widget ask payload:", payload);
-
     const { data } = await axios.post(chatUrl, payload, {
-  timeout: 120000
-});
+      timeout: aiConfig.chatTimeout || 120000
+    });
 
     const answer = data.answer ?? data.message ?? data.response ?? data;
     const sources = data.sources ?? [];

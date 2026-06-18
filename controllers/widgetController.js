@@ -34,19 +34,20 @@ const createWidget = async (req, res) => {
     const publicKey = generateApiKey();
     const api_key_hash = hashApiKey(publicKey);
 
-    const widget = await widgetRepository.createWidget({
-      widget_id: uuid(),
-      agent_id: agent.agent_id,
-      api_key_hash,
-      active: true,
-      expire_at: expire_at || null,
-      welcome_message: welcome_message || "Hi! How can I help you?",
-      position: position || "bottom-right",
-      theme_config: {
-  primaryColor: theme_config?.primaryColor || "#0057ff",
-  textColor: theme_config?.textColor || "#ffffff"
-}
-    });
+  const widget = await widgetRepository.createWidget({
+  widget_id: uuid(),
+  agent_id: agent.agent_id,
+  public_key: publicKey,
+  api_key_hash,
+  active: true,
+  expire_at: expire_at || null,
+  welcome_message: welcome_message || "Hi! How can I help you?",
+  position: position || "bottom-right",
+  theme_config: {
+    primaryColor: theme_config?.primaryColor || "#0057ff",
+    textColor: theme_config?.textColor || "#ffffff"
+  }
+});
 
     const webUrl = process.env.API_URL?.replace(/\/$/, "");
 
@@ -88,7 +89,22 @@ const getWidget = async (req, res) => {
       return res.status(404).json({ message: "Widget not found" });
     }
 
-    return res.json({ widget });
+    const webUrl = process.env.API_URL?.replace(/\/$/, "");
+
+    if (!webUrl) {
+      return res.status(500).json({ message: "WEB_URL is not set" });
+    }
+
+    const publicKey = widget.public_key;
+
+    const embed_code = `<script src="${webUrl}/widget.js" data-public-key="${publicKey}" defer></script>`;
+
+    return res.status(200).json({
+      message: "Widget returned",
+      widget,
+      publicKey,
+      embed_code
+    });
   } catch (error) {
     console.error("getWidget error:", error);
 
